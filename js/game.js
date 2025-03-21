@@ -30,14 +30,13 @@ class Game {
             this.player = new Player(this.canvas, this.images.player);
             this.platforms = [];
             this.score = 0;
-            this.highestY = 0; // Track highest position for better scoring
+            this.highestY = 0;
             this.gameState = 'ready';
-    
+            
             this.initEventListeners();
-            // Enable start button after images are loaded
+            this.initSounds(); // Initialize sounds
             this.startButton.disabled = false;
             
-            // Mulai lazy loading resource tambahan
             this.lazyLoadAssets();
         }).catch(error => {
             console.error('Failed to load game images:', error);
@@ -235,6 +234,37 @@ class Game {
         this.updateScore(0);
     }
 
+    initSounds() {
+        this.sounds = {};
+        
+        // Define all game sounds
+        const soundPaths = {
+            jump: GAME_CONFIG.SOUNDS.JUMP,
+            land: GAME_CONFIG.SOUNDS.LAND,
+            gameOver: GAME_CONFIG.SOUNDS.GAME_OVER,
+            background: GAME_CONFIG.SOUNDS.BACKGROUND
+        };
+        
+        // Load all sounds
+        Object.entries(soundPaths).forEach(([key, path]) => {
+            this.sounds[key] = new Audio(path);
+            
+            // Set volume levels
+            if (key === 'background') {
+                this.sounds[key].volume = 0.2;
+                this.sounds[key].loop = true;
+            } else {
+                this.sounds[key].volume = 0.3;
+            }
+            
+            // Preload audio
+            this.sounds[key].load();
+        });
+        
+        // Debug log
+        console.log('Game sounds initialized:', Object.keys(this.sounds));
+    }
+
     updateScore(points) {
         this.score += points;
         this.scoreElement.textContent = this.score;
@@ -242,16 +272,20 @@ class Game {
 
     startGame() {
         if (this.gameState === 'playing') {
-            return; // Prevent multiple game instances
+            return;
         }
         
         this.gameState = 'playing';
         this.startButton.style.display = 'none';
         this.initGame();
         this.lastTime = performance.now();
-        this.gameLoop();
         
-        // Pastikan asset tambahan sudah dimuat
+        // Start background music
+        if (this.sounds && this.sounds.background) {
+            this.sounds.background.play().catch(e => console.log('Background audio failed to play:', e));
+        }
+        
+        this.gameLoop();
         this.lazyLoadAssets();
     }
 
@@ -344,10 +378,21 @@ class Game {
 
     async gameOver() {
         if (this.gameState !== 'playing') {
-            return; // Prevent multiple game over calls
+            return;
         }
         
         this.gameState = 'gameOver';
+        
+        // Play game over sound
+        if (this.sounds && this.sounds.gameOver) {
+            // Stop background music
+            if (this.sounds.background) {
+                this.sounds.background.pause();
+                this.sounds.background.currentTime = 0;
+            }
+            
+            this.sounds.gameOver.play().catch(e => console.log('Game over audio failed to play:', e));
+        }
         
         // Cancel any pending animation frames
         if (this.animationFrameId) {
