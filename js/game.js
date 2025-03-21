@@ -327,7 +327,11 @@ class Game {
         if (this.gameState !== 'playing') return;
         
         if (!this.lastTime) this.lastTime = currentTime;
-        const deltaTime = (currentTime - this.lastTime) / 1000; // convert to seconds
+        let deltaTime = (currentTime - this.lastTime) / 1000; // convert to seconds
+        
+        // Cap delta time untuk menghindari physics jump pada lag
+        deltaTime = Math.min(deltaTime, 0.1);
+        
         this.lastTime = currentTime;
         
         this.update(deltaTime);
