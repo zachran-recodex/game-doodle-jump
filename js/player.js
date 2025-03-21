@@ -3,22 +3,26 @@ import GAME_CONFIG from './config.js';
 class Player {
     constructor(canvas, image) {
         this.canvas = canvas;
-        this.width = 50;  // Adjust size as needed
-        this.height = 50; // Adjust size as needed
-        this.x = canvas.width / 2;
+        this.width = 50;
+        this.height = 50;
+        this.x = canvas.width / 2 - this.width / 2;
         this.y = GAME_CONFIG.FLOOR_Y - this.height;
         this.velocityX = 0;
         this.velocityY = 0;
         this.image = image;
         this.facingRight = true;
+        this.isJumping = false;
+        this.jumpSound = new Audio('./assets/jump.mp3'); // Add sound (create the file)
+        this.jumpSound.volume = 0.3;
     }
 
     reset() {
-        this.x = this.canvas.width / 2;
+        this.x = this.canvas.width / 2 - this.width / 2;
         this.y = GAME_CONFIG.FLOOR_Y - this.height;
         this.velocityX = 0;
         this.velocityY = 0;
         this.facingRight = true;
+        this.isJumping = false;
     }
 
     draw(ctx) {
@@ -33,27 +37,63 @@ class Player {
         ctx.restore();
     }
 
-    update(keys) {
+    jump() {
+        if (!this.isJumping) {
+            this.velocityY = GAME_CONFIG.JUMP_FORCE;
+            this.isJumping = true;
+            
+            // Play jump sound with error handling
+            try {
+                this.jumpSound.currentTime = 0;
+                this.jumpSound.play().catch(e => console.log('Audio play failed:', e));
+            } catch (e) {
+                console.log('Audio error:', e);
+            }
+        }
+    }
+
+    land(platformY) {
+        // Only land if we're falling
+        if (this.velocityY > 0) {
+            this.velocityY = 0;
+            this.y = platformY - this.height;
+            this.isJumping = false;
+        }
+    }
+
+    update(keys, deltaTime) {
+        // Apply speed based on delta time for consistent movement
+        const speed = GAME_CONFIG.PLAYER_SPEED * (deltaTime || 1/60);
+        
         // Update facing direction based on movement
         if (keys['ArrowLeft']) {
             this.facingRight = false;
-            const newX = this.x - GAME_CONFIG.PLAYER_SPEED;
-            this.x = Math.max(-this.width, newX); // Prevent going too far left
+            this.velocityX = -speed * 5;
         } else if (keys['ArrowRight']) {
             this.facingRight = true;
-            const newX = this.x + GAME_CONFIG.PLAYER_SPEED;
-            this.x = Math.min(this.canvas.width, newX); // Prevent going too far right
+            this.velocityX = speed * 5;
+        } else {
+            // Apply friction to slow down player when not pressing keys
+            this.velocityX *= 0.8;
         }
         
-        this.velocityY += GAME_CONFIG.GRAVITY;
+        // Update position with smoothing
+        this.x += this.velocityX;
+        
+        // Apply gravity based on delta time
+        this.velocityY += GAME_CONFIG.GRAVITY * (deltaTime || 1/60) * 60;
         this.y += this.velocityY;
     
         // Screen wrapping with smoother transition
         if (this.x + this.width < 0) {
-            this.x = this.canvas.width - 1;
+            this.x = this.canvas.width;
         } else if (this.x > this.canvas.width) {
-            this.x = -this.width + 1;
+            this.x = -this.width;
         }
+        
+        // Clamp velocities to prevent extreme values
+        this.velocityY = Math.min(this.velocityY, 20);
+        this.velocityX = Math.max(Math.min(this.velocityX, 10), -10);
     }
 }
 
