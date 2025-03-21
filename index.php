@@ -25,15 +25,20 @@
         </div>
 
         <div class="mt-8">
-            <h2 class="text-2xl font-bold text-white mb-4">High Scores</h2>
-            <div id="highScores" class="bg-gray-800 p-4 rounded">
+            <h2 class="text-2xl font-bold text-white mb-4 text-center">High Scores</h2>
+            <div id="highScores" class="bg-gray-800 p-4 rounded max-w-md mx-auto">
                 <?php
                 include 'config/db_config.php';
                 $stmt = $pdo->query("SELECT player_name, score FROM scores ORDER BY score DESC LIMIT 5");
-                while ($row = $stmt->fetch()) {
-                    echo "<div class='text-white mb-2'>{$row['player_name']}: {$row['score']}</div>";
-                }
                 ?>
+                <div class="space-y-2">
+                    <?php while ($row = $stmt->fetch()): ?>
+                        <div class="flex justify-between items-center text-white p-2 border-b border-gray-700">
+                            <span class="font-semibold"><?php echo htmlspecialchars($row['player_name']); ?></span>
+                            <span class="text-yellow-400"><?php echo number_format($row['score']); ?></span>
+                        </div>
+                    <?php endwhile; ?>
+                </div>
             </div>
         </div>
     </div>
