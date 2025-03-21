@@ -1,0 +1,7 @@
+#gameCanvas {
+    image-rendering: pixelated;
+}
+
+.container {
+    max-width: 800px;
+}
