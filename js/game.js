@@ -36,11 +36,36 @@ class Game {
             this.initEventListeners();
             // Enable start button after images are loaded
             this.startButton.disabled = false;
+            
+            // Mulai lazy loading resource tambahan
+            this.lazyLoadAssets();
         }).catch(error => {
             console.error('Failed to load game images:', error);
             this.gameState = 'error';
             alert('Failed to load game resources. Please check that all image files exist in the assets folder and refresh the page.');
         });
+    }
+    
+    async loadImages() {
+        try {
+            // Ganti dengan preloadCriticalAssets untuk fokus pada asset penting
+            this.images = {};
+            await this.preloadCriticalAssets().then(images => {
+                // Memetakan hasil ke dalam this.images
+                this.images.player = images[0];
+                this.images.platform = images[1];
+            });
+            
+            // Verify images loaded correctly
+            if (!this.images.player || !this.images.platform) {
+                throw new Error('Images not loaded properly');
+            }
+            
+            return this.images;
+        } catch (error) {
+            console.error('Image loading error:', error);
+            throw new Error('Failed to load game assets');
+        }
     }
 
     async loadImages() {
@@ -92,6 +117,32 @@ class Game {
             
             img.src = src;
         });
+    }
+    
+    // Tambahkan metode baru ini
+    preloadCriticalAssets() {
+        // Preload semua asset yang dibutuhkan untuk gameplay awal
+        return Promise.all([
+            this.loadImage('./assets/player.png'),
+            this.loadImage('./assets/platform.png')
+        ]);
+    }
+    
+    // Tambahkan metode baru ini
+    lazyLoadAssets() {
+        // Load asset tambahan saat game sudah berjalan
+        setTimeout(() => {
+            const audioAssets = [
+                './assets/jump.mp3',
+                './assets/land.mp3',
+                './assets/game_over.mp3'
+            ];
+            
+            audioAssets.forEach(src => {
+                const audio = new Audio();
+                audio.src = src;
+            });
+        }, 1000);
     }
 
     initEventListeners() {
@@ -199,6 +250,9 @@ class Game {
         this.initGame();
         this.lastTime = performance.now();
         this.gameLoop();
+        
+        // Pastikan asset tambahan sudah dimuat
+        this.lazyLoadAssets();
     }
 
     update(deltaTime) {
