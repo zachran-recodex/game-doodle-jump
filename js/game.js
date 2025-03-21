@@ -74,26 +74,23 @@ class Game {
     loadImage(src) {
         return new Promise((resolve, reject) => {
             const img = new Image();
-            
-            img.onload = () => resolve(img);
-            img.onerror = () => {
-                console.error(`Failed to load image: ${src}`);
-                reject(new Error(`Image not found: ${src}`));
-            };
-            
-            img.src = src;
-            
-            // Set a reasonable timeout
             const timeoutId = setTimeout(() => {
                 img.src = ''; // Cancel image request
                 reject(new Error(`Image load timeout (5s): ${src}`));
             }, 5000);
             
-            // Clear timeout if image loads successfully
             img.onload = () => {
                 clearTimeout(timeoutId);
                 resolve(img);
             };
+            
+            img.onerror = () => {
+                clearTimeout(timeoutId); // Juga perlu membersihkan timeout saat error
+                console.error(`Failed to load image: ${src}`);
+                reject(new Error(`Image not found: ${src}`));
+            };
+            
+            img.src = src;
         });
     }
 
