@@ -12,8 +12,15 @@ class Player {
         this.image = image;
         this.facingRight = true;
         this.isJumping = false;
-        this.jumpSound = new Audio('./assets/jump.mp3'); // Add sound (create the file)
-        this.jumpSound.volume = 0.3;
+        this.jumpSound = null;
+        try {
+            this.jumpSound = new Audio('./assets/jump.mp3');
+            this.jumpSound.volume = 0.3;
+            // Pre-load untuk menghindari delay pada audio pertama
+            this.jumpSound.load();
+        } catch (e) {
+            console.log('Audio not supported:', e);
+        }
     }
 
     reset() {
@@ -43,11 +50,15 @@ class Player {
             this.isJumping = true;
             
             // Play jump sound with error handling
-            try {
-                this.jumpSound.currentTime = 0;
-                this.jumpSound.play().catch(e => console.log('Audio play failed:', e));
-            } catch (e) {
-                console.log('Audio error:', e);
+            if (this.jumpSound) {
+                try {
+                    // Gunakan cloneNode untuk menghindari masalah audio yang masih playing
+                    const soundEffect = this.jumpSound.cloneNode();
+                    soundEffect.volume = 0.3;
+                    soundEffect.play().catch(e => console.log('Audio play failed:', e));
+                } catch (e) {
+                    console.log('Audio error:', e);
+                }
             }
         }
     }
