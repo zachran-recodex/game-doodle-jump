@@ -62,23 +62,22 @@ class Player {
     }
 
     update(keys, deltaTime) {
-        // Apply speed based on delta time for consistent movement
-        const speed = GAME_CONFIG.PLAYER_SPEED * (deltaTime || 1/60);
+        // Use direct movement instead of physics-based velocity for horizontal movement
+        // This makes the controls feel more responsive
         
-        // Update facing direction based on movement
+        const moveSpeed = GAME_CONFIG.PLAYER_SPEED * 2; // Increase base movement speed
+        
         if (keys['ArrowLeft']) {
             this.facingRight = false;
-            this.velocityX = -speed * 5;
-        } else if (keys['ArrowRight']) {
-            this.facingRight = true;
-            this.velocityX = speed * 5;
-        } else {
-            // Apply friction to slow down player when not pressing keys
-            this.velocityX *= 0.8;
-        }
+            // Move directly instead of changing velocity
+            this.x -= moveSpeed;
+        } 
         
-        // Update position with smoothing
-        this.x += this.velocityX;
+        if (keys['ArrowRight']) {
+            this.facingRight = true;
+            // Move directly instead of changing velocity
+            this.x += moveSpeed;
+        }
         
         // Apply gravity based on delta time
         this.velocityY += GAME_CONFIG.GRAVITY * (deltaTime || 1/60) * 60;
@@ -91,9 +90,8 @@ class Player {
             this.x = -this.width;
         }
         
-        // Clamp velocities to prevent extreme values
+        // Clamp vertical velocity to prevent extreme values
         this.velocityY = Math.min(this.velocityY, 20);
-        this.velocityX = Math.max(Math.min(this.velocityX, 10), -10);
     }
 }
 
