@@ -213,6 +213,7 @@ class Game {
         }
 
         // Platform collision - improved
+        let isOnPlatform = false;
         this.platforms.forEach(platform => {
             if (this.player.velocityY > 0 && // Only check when falling
                 this.player.x < platform.x + platform.width &&
@@ -221,6 +222,7 @@ class Game {
                 this.player.y + this.player.height < platform.y + platform.height * 1.2) // Slight forgiveness
             {
                 this.player.land(platform.y);
+                isOnPlatform = true;
                 
                 // Jump if space is pressed
                 if (this.keys[' ']) {
@@ -234,6 +236,11 @@ class Game {
                 }
             }
         });
+
+        // Tambahkan penanganan ketika pemain tidak pada platform
+        if (!isOnPlatform && !this.player.isJumping && this.player.velocityY >= 0) {
+            this.player.isJumping = true;
+        }
 
         // Camera/screen scroll based on player height
         if (this.player.y < this.canvas.height / 2) {
