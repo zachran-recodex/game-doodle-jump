@@ -467,34 +467,41 @@ class Game {
 
     async saveScore(playerName, score) {
         try {
-            const formData = new FormData();
-            formData.append('player_name', playerName);
-            formData.append('score', score);
-            
             const response = await fetch('save_score.php', {
                 method: 'POST',
-                body: formData
+                body: new URLSearchParams({
+                    player_name: playerName,
+                    score: score
+                }),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
             });
             
-            if (response.ok) {
-                // Update high scores without full page reload
-                const highScoresElement = document.getElementById('highScores');
-                if (highScoresElement) {
-                    const highScoresHtml = await fetch('get_high_scores.php').then(res => res.text());
-                    if (highScoresHtml) {
-                        highScoresElement.innerHTML = highScoresHtml;
-                    } else {
-                        location.reload(); // Fallback to page reload
-                    }
-                } else {
-                    location.reload();
-                }
-            } else {
-                console.error('Error response from server:', await response.text());
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to save score');
+            }
+            
+            // Update high scores
+            await this.updateHighScores();
+        } catch (error) {
+            console.error('Score save error:', error);
+            alert('Failed to save your score. Please try again.');
+        }
+    }
+    
+    async updateHighScores() {
+        try {
+            const highScoresElement = document.getElementById('highScores');
+            if (highScoresElement) {
+                const response = await fetch('get_high_scores.php');
+                const highScoresHtml = await response.text();
+                highScoresElement.innerHTML = highScoresHtml;
             }
         } catch (error) {
-            console.error('Error saving score:', error);
-            alert('Failed to save your score. Please try again.');
+            console.error('High scores update failed:', error);
         }
     }
 }
