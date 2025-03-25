@@ -4,45 +4,66 @@ import Platform from './platform.js';
 
 class Game {
     constructor() {
-        this.canvas = document.getElementById('gameCanvas');
-        if (!this.canvas) {
-            throw new Error('Canvas element not found');
-        }
-        
-        this.ctx = this.canvas.getContext('2d');
-        this.scoreElement = document.getElementById('score');
-        if (!this.scoreElement) {
-            throw new Error('Score element not found');
-        }
-        
-        this.startButton = document.getElementById('startGame');
-        if (!this.startButton) {
-            throw new Error('Start button not found');
-        }
-        
-        // Disable start button until images are loaded
-        this.startButton.disabled = true;
-        this.gameState = 'loading'; // Add game state tracking
-        
-        // Load images before starting the game
-        this.loadImages().then(() => {
-            console.log('Images loaded successfully:', this.images);
-            this.player = new Player(this.canvas, this.images.player);
-            this.platforms = [];
-            this.score = 0;
-            this.highestY = 0;
-            this.gameState = 'ready';
+        try {
+            this.canvas = document.getElementById('gameCanvas');
+            if (!this.canvas) {
+                throw new Error('Canvas element not found');
+            }
             
-            this.initEventListeners();
-            this.initSounds(); // Initialize sounds
-            this.startButton.disabled = false;
+            this.ctx = this.canvas.getContext('2d');
+            this.scoreElement = document.getElementById('score');
+            if (!this.scoreElement) {
+                throw new Error('Score element not found');
+            }
             
-            this.lazyLoadAssets();
-        }).catch(error => {
-            console.error('Failed to load game images:', error);
+            this.startButton = document.getElementById('startGame');
+            if (!this.startButton) {
+                throw new Error('Start button not found');
+            }
+            
+            // Disable start button until images are loaded
+            this.startButton.disabled = true;
+            this.gameState = 'loading'; // Add game state tracking
+            
+            // Load images before starting the game
+            this.loadImages().then(() => {
+                console.log('Images loaded successfully:', this.images);
+                this.player = new Player(this.canvas, this.images.player);
+                this.platforms = [];
+                this.score = 0;
+                this.highestY = 0;
+                this.gameState = 'ready';
+                
+                this.initEventListeners();
+                this.initSounds(); // Initialize sounds
+                this.startButton.disabled = false;
+                
+                this.lazyLoadAssets();
+            }).catch(error => {
+                console.error('Failed to load game images:', error);
+                this.gameState = 'error';
+                alert('Failed to load game resources. Please check that all image files exist in the assets folder and refresh the page.');
+            });
+            this.initErrorHandling();
+        } catch (error) {
+            this.handleInitializationError(error);
+        }
+    }
+
+    initErrorHandling() {
+        window.addEventListener('error', (event) => {
+            console.error('Unhandled error:', event.error);
             this.gameState = 'error';
-            alert('Failed to load game resources. Please check that all image files exist in the assets folder and refresh the page.');
+            alert('An unexpected error occurred. Please reload the page.');
         });
+    }
+    
+    handleInitializationError(error) {
+        console.error('Game initialization failed:', error);
+        const errorContainer = document.createElement('div');
+        errorContainer.className = 'text-red-500 text-center';
+        errorContainer.textContent = 'Game could not be initialized. Please check console for details.';
+        document.body.appendChild(errorContainer);
     }
     
     async loadImages() {
