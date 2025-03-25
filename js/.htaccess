@@ -1,0 +1,10 @@
+# Ensure proper access to JavaScript files
+Order Allow,Deny
+Allow from all
+
+# Prevent directory listing
+Options -Indexes
+
+# Set correct MIME types
+AddType application/javascript .js
+AddType application/javascript .mjs

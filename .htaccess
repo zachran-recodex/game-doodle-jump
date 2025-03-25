@@ -1,84 +1,31 @@
-# Secure .htaccess Configuration for Doodle Jump Game
+# JavaScript and Module Access Configuration
 
-# Disable directory browsing
-Options -Indexes
-
-# Protect sensitive files
-<FilesMatch "^(config|\.htaccess|\.htpasswd|\.env)">
+# Allow access to JavaScript files
+<FilesMatch "\.(js|mjs)$">
     Order Allow,Deny
-    Deny from all
+    Allow from all
 </FilesMatch>
 
-# Block access to PHP error logs
-<FilesMatch "^error_log$">
-    Order Allow,Deny
-    Deny from all
-</FilesMatch>
+# Ensure proper MIME types for JavaScript
+AddType application/javascript .js
+AddType application/javascript .mjs
 
-# Prevent viewing of PHP source code
-<IfModule mod_php.c>
-    php_flag display_startup_errors off
-    php_flag display_errors off
-    php_flag html_errors off
-</IfModule>
-
-# Secure PHP configuration
-<IfModule mod_php.c>
-    php_value upload_max_filesize 2M
-    php_value post_max_size 8M
-    php_value max_execution_time 30
-    php_value max_input_time 30
-</IfModule>
-
-# Enable compression for better performance
-<IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript
-</IfModule>
-
-# Set default character encoding
-AddDefaultCharset UTF-8
-
-# Enable browser caching for static assets
-<IfModule mod_expires.c>
-    ExpiresActive On
-    ExpiresByType image/jpg "access plus 1 year"
-    ExpiresByType image/jpeg "access plus 1 year"
-    ExpiresByType image/gif "access plus 1 year"
-    ExpiresByType image/png "access plus 1 year"
-    ExpiresByType text/css "access plus 1 month"
-    ExpiresByType application/pdf "access plus 1 month"
-    ExpiresByType text/javascript "access plus 1 month"
-    ExpiresByType application/javascript "access plus 1 month"
-    ExpiresByType application/x-shockwave-flash "access plus 1 month"
-    ExpiresByType image/x-icon "access plus 1 year"
-    ExpiresDefault "access plus 2 days"
-</IfModule>
-
-# X-XSS Protection
+# Enable CORS for module loading if needed
 <IfModule mod_headers.c>
-    Header set X-XSS-Protection "1; mode=block"
-    Header always append X-Frame-Options SAMEORIGIN
-    Header set X-Content-Type-Options nosniff
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
-</IfModule>
+    <FilesMatch "\.(js|mjs)$">
+        Header set Access-Control-Allow-Origin "*"
+    </IfModule>
+</FilesMatch>
 
-# Redirect HTTP to HTTPS (uncomment if using SSL)
-# RewriteEngine On
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Protect configuration files while allowing JS module access
+<FilesMatch "^config\.js$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
 
-# Protect against SQL Injection
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteCond %{QUERY_STRING} (\<|%3C).*script.*(\>|%3E) [NC,OR]
-    RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
-    RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
-    RewriteRule ^(.*)$ index.php [F,L]
-</IfModule>
-
-# Block access from bad bots and scrapers
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteCond %{HTTP_USER_AGENT} ^(atr6uAgent|Baiduspider|BlackWidow|Bot\ mailto:craftbot@yahoo\.com|casper|CheckUrl|ChinaClaw|clshttp|crunchy|Custo|Default\ Browser|DIIbot|DISCo|DOC|eCatch|EirGrabber|email|EmeraldShield|ExtractorPro|EyeNetIE|FlashGet|GetRight|GetWeb!|Go!Zilla|Go-Ahead-Got-It|GrabNet|Grafula|Bulletin\ Retriever|harvest|HMView|HttpLibrary|HTTrack|Humanlinks|NameOfAgent|JetCar|JumboBrain|KKman|Kenjin\ Spider|Keyword\ Density|Kinza|larbin|Leafy\ Spider|LeechFTP|libWeb|Links\ Optimizer|LinkWalker|LWP|Mag-Net|Mediapartners-Google|MSIECrawler|NetAnts|NetCarta|NetMechanic|NetSpider|Nextopia|NIX-Loobinbot|Nutch|Offline\ Explorer|Offline\ Navigator|Openfind|OptimizationBot|PageGrabber|PatchBot|Pockey|Proxy|psbot|Punypy|QueryN\ Metasearch|Realtek\ Pumpkin|Reaper|Reget|RepoMonkey|Rippers|SiteCheck|SiteSnagger|Seeker|Shai|Siphon|Sitedomain\ Analyzer|Snapbot|Snooper|Stripper|Sucker|Sprite|SuperHTTP|WebBAA|WebCapture|WebCopier|Webful|WebIndexer|WebLeacher|WebSauger|WebStripper|WebZIP|Wget|Whacker|Widow|WWWOFFLE|Xaldon\ WebSpider|Xenu|Zeus) [NC]
-    RewriteRule ^(.*)$ - [F,L]
-</IfModule>
+# Additional security for module directory
+<Directory "js/">
+    Options -Indexes
+    Order Allow,Deny
+    Allow from all
+</Directory>
