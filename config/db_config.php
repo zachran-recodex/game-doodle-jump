@@ -1,10 +1,19 @@
 <?php
-// Enhance error handling and add more robust configuration
-$host = 'localhost';
-$port = 8889;
-$dbname = 'doodle_jump';
-$username = 'root';
-$password = 'root';
+// Load environment variables
+$envFile = __DIR__ . '/../.env';
+if (file_exists($envFile)) {
+    $envVars = parse_ini_file($envFile);
+    foreach ($envVars as $key => $value) {
+        $_ENV[$key] = $value;
+    }
+}
+
+// Database configuration from environment variables
+$host = $_ENV['DB_HOST'] ?? 'localhost';
+$port = $_ENV['DB_PORT'] ?? 3306;
+$dbname = $_ENV['DB_NAME'] ?? '';
+$username = $_ENV['DB_USER'] ?? '';
+$password = $_ENV['DB_PASSWORD'] ?? '';
 
 // Use environment variables or a separate config file in production
 try {
