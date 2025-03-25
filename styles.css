@@ -1,7 +1,35 @@
+/* Improve canvas and game styling */
 #gameCanvas {
     image-rendering: pixelated;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
 
 .container {
     max-width: 800px;
+    width: 100%;
+    padding: 0 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    #gameCanvas {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
+/* Improved button and text styles */
+#startGame {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+#startGame:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
