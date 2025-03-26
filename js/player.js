@@ -73,10 +73,8 @@ class Player {
     }
 
     update(keys, deltaTime) {
-        // Use direct movement instead of physics-based velocity for horizontal movement
-        // This makes the controls feel more responsive
-        
-        const moveSpeed = GAME_CONFIG.PLAYER_SPEED * 2; // Increase base movement speed
+        // Reduce movement speed for more controlled movement
+        const moveSpeed = GAME_CONFIG.PLAYER_SPEED; // Reduced from * 2
         
         if (keys['ArrowLeft']) {
             this.facingRight = false;
