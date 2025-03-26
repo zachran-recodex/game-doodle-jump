@@ -7,16 +7,18 @@ class Player {
         this.height = 50;
         this.x = canvas.width / 2 - this.width / 2;
         this.y = GAME_CONFIG.FLOOR_Y - this.height;
-        this.velocityX = 0;
+        this.velocityX = 0; // Add horizontal velocity
         this.velocityY = 0;
         this.image = image;
         this.facingRight = true;
         this.isJumping = false;
+        this.acceleration = 0.3; // Smooth acceleration
+        this.maxSpeed = GAME_CONFIG.PLAYER_SPEED;
+        this.friction = 0.8; // Gradual slowdown when no key is pressed
         this.jumpSound = null;
         try {
             this.jumpSound = new Audio('./assets/jump.mp3');
             this.jumpSound.volume = 0.3;
-            // Pre-load untuk menghindari delay pada audio pertama
             this.jumpSound.load();
         } catch (e) {
             console.log('Audio not supported:', e);
@@ -33,7 +35,6 @@ class Player {
     }
 
     draw(ctx) {
-        // Draw player image with correct facing direction
         ctx.save();
         if (!this.facingRight) {
             ctx.scale(-1, 1);
@@ -49,10 +50,8 @@ class Player {
             this.velocityY = GAME_CONFIG.JUMP_FORCE;
             this.isJumping = true;
             
-            // Play jump sound with error handling
             if (this.jumpSound) {
                 try {
-                    // Gunakan cloneNode untuk menghindari masalah audio yang masih playing
                     const soundEffect = this.jumpSound.cloneNode();
                     soundEffect.volume = 0.3;
                     soundEffect.play().catch(e => console.log('Audio play failed:', e));
@@ -64,7 +63,6 @@ class Player {
     }
 
     land(platformY) {
-        // Only land if we're falling
         if (this.velocityY > 0) {
             this.velocityY = 0;
             this.y = platformY - this.height;
@@ -73,24 +71,24 @@ class Player {
     }
 
     update(keys, deltaTime) {
-        // Reduce movement speed for more controlled movement
-        const moveSpeed = GAME_CONFIG.PLAYER_SPEED; // Reduced from * 2
-        
+        // Horizontal movement with smooth acceleration
         if (keys['ArrowLeft']) {
             this.facingRight = false;
-            // Move directly instead of changing velocity
-            this.x -= moveSpeed;
-        } 
-        
-        if (keys['ArrowRight']) {
+            this.velocityX -= this.acceleration;
+            // Clamp to max speed
+            this.velocityX = Math.max(-this.maxSpeed, this.velocityX);
+        } else if (keys['ArrowRight']) {
             this.facingRight = true;
-            // Move directly instead of changing velocity
-            this.x += moveSpeed;
+            this.velocityX += this.acceleration;
+            // Clamp to max speed
+            this.velocityX = Math.min(this.maxSpeed, this.velocityX);
+        } else {
+            // Apply friction when no movement keys are pressed
+            this.velocityX *= this.friction;
         }
-        
-        // Apply gravity based on delta time
-        this.velocityY += GAME_CONFIG.GRAVITY * (deltaTime || 1/60) * 60;
-        this.y += this.velocityY;
+
+        // Update horizontal position
+        this.x += this.velocityX;
     
         // Screen wrapping with smoother transition
         if (this.x + this.width < 0) {
@@ -98,6 +96,10 @@ class Player {
         } else if (this.x > this.canvas.width) {
             this.x = -this.width;
         }
+        
+        // Apply gravity based on delta time
+        this.velocityY += GAME_CONFIG.GRAVITY * (deltaTime || 1/60) * 60;
+        this.y += this.velocityY;
         
         // Clamp vertical velocity to prevent extreme values
         this.velocityY = Math.min(this.velocityY, 20);

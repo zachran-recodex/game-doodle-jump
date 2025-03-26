@@ -8,7 +8,7 @@ const GAME_CONFIG = Object.freeze({
     GRAVITY: 0.5,
     JUMP_FORCE: -15,
     SCROLL_SPEED: 3,
-    PLAYER_SPEED: 5,
+    PLAYER_SPEED: 2, // Reduced from 5 to 2
     FLOOR_Y: 580,
     DIFFICULTY_INCREASE_RATE: 0.1,
     PLATFORM_TYPES: Object.freeze({
