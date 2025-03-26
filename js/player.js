@@ -7,14 +7,14 @@ class Player {
         this.height = 50;
         this.x = canvas.width / 2 - this.width / 2;
         this.y = GAME_CONFIG.FLOOR_Y - this.height;
-        this.velocityX = 0; // Add horizontal velocity
+        this.velocityX = 0;
         this.velocityY = 0;
         this.image = image;
         this.facingRight = true;
         this.isJumping = false;
-        this.acceleration = 0.3; // Smooth acceleration
+        this.acceleration = 0.1; // Very slow acceleration
         this.maxSpeed = GAME_CONFIG.PLAYER_SPEED;
-        this.friction = 0.8; // Gradual slowdown when no key is pressed
+        this.friction = 0.9; // Higher friction to slow down faster
         this.jumpSound = null;
         try {
             this.jumpSound = new Audio('./assets/jump.mp3');
@@ -71,7 +71,7 @@ class Player {
     }
 
     update(keys, deltaTime) {
-        // Horizontal movement with smooth acceleration
+        // Extremely slow horizontal movement
         if (keys['ArrowLeft']) {
             this.facingRight = false;
             this.velocityX -= this.acceleration;
@@ -83,8 +83,13 @@ class Player {
             // Clamp to max speed
             this.velocityX = Math.min(this.maxSpeed, this.velocityX);
         } else {
-            // Apply friction when no movement keys are pressed
+            // Apply higher friction when no movement keys are pressed
             this.velocityX *= this.friction;
+            
+            // Stop completely if velocity is very small
+            if (Math.abs(this.velocityX) < 0.01) {
+                this.velocityX = 0;
+            }
         }
 
         // Update horizontal position
